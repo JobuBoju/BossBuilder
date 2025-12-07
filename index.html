@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boss Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0d0c0c;
+      font-family: 'Cinzel', serif;
+      min-height: 100vh;
+      color: #D4AF37;
+    }
+
+    /* Homepage Styles */
+    .homepage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* It works don't touch it no more */
+    .title-image {
+      max-width: 1200px;
+      width: 1160%;
+      height: auto;
+      margin-bottom: 3rem;
+      margin-top: -6rem;
+    }
+
+    .search-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .search-input {
+      position: relative;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-size: 1.4rem;
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      color: #D4AF37;
+      border-radius: 8px;
+      outline: none;
+      font-family: 'Cinzel', serif;
+      transition: all 0.3s ease;
+    }
+
+    .search-input::placeholder {
+      color: #6b5d3f;
+    }
+
+    .search-input:focus {
+      border-color: #D4AF37;
+    }
+
+    .boss-list {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      border-radius: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+      display: none;
+      z-index: 100;
+    }
+
+    .boss-list.active {
+      display: block;
+    }
+
+    .boss-item {
+      padding: 1rem 1.5rem;
+      color: #D4AF37;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 1.3rem;
+    }
+
+    .boss-item:last-child {
+      border-bottom: none;
+    }
+
+    .boss-item:hover {
+      background-color: #2a2a2a;
+    }
+
+    .no-results {
+      padding: 1.5rem;
+      color: #6b5d3f;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .loading {
+      padding: 1.5rem;
+      color: #D4AF37;
+      text-align: center;
+    }
+
+    /* Boss Page Styles */
+    .boss-page {
+      display: none;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .boss-page.active {
+      display: block;
+    }
+
+    .back-button {
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      color: #D4AF37;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-family: 'Cinzel', serif;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      background-color: #2a2a2a;
+    }
+
+    .boss-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .boss-image {
+      max-width: 500px;
+      width: 100%;
+      height: 350px;
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: #6b5d3f;
+    }
+
+    .boss-name {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+    }
+
+    .difficulty {
+      font-size: 1.5rem;
+      color: #f0d060;
+    }
+
+    .build-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+
+    .input-column h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      color: #f0d060;
+    }
+
+    .input-field, .dropdown-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      color: #D4AF37;
+      border-radius: 8px;
+      outline: none;
+      font-family: 'Cinzel', serif;
+    }
+
+    .dropdown-container {
+      position: relative;
+    }
+
+    .dropdown-list {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      right: 0;
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: none;
+      z-index: 50;
+    }
+
+    .dropdown-list.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 0.75rem 1rem;
+      color: #D4AF37;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background-color: #2a2a2a;
+    }
+
+    .weapon-group {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+    }
+
+    .rating-button {
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      color: #D4AF37;
+      padding: 1rem 2rem;
+      font-size: 1.3rem;
+      font-family: 'Cinzel', serif;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-top: 2rem;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .rating-button:hover {
+      background-color: #2a2a2a;
+    }
+
+    .output-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #1a1a1a;
+      border: 2px solid #D4AF37;
+      border-radius: 8px;
+      padding: 2rem;
+      min-height: 400px;
+    }
+
+    .rating-display {
+      font-size: 5rem;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+      margin-bottom: 1rem;
+    }
+
+    .rating-text {
+      font-size: 1.5rem;
+      color: #f0d060;
+      text-align: center;
+    }
+
+    .rating-explanation {
+      margin-top: 2rem;
+      line-height: 1.8;
+      color: #D4AF37;
+      text-align: center;
+      max-width: 500px;
+    }
+
+    /* Scrollbar styles */
+    .boss-list::-webkit-scrollbar,
+    .dropdown-list::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .boss-list::-webkit-scrollbar-track,
+    .dropdown-list::-webkit-scrollbar-track {
+      background: #0d0c0c;
+    }
+
+    .boss-list::-webkit-scrollbar-thumb,
+    .dropdown-list::-webkit-scrollbar-thumb {
+      background: #D4AF37;
+      border-radius: 5px;
+    }
+
+    .boss-list::-webkit-scrollbar-thumb:hover,
+    .dropdown-list::-webkit-scrollbar-thumb:hover {
+      background: #D4AF37;
+    }
+
+    /* Hide number input arrows */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /*Supposedley used for Firefox but it's being weird */
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    @media (max-width: 1024px) {
+      .build-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .title-image {
+        max-width: 90%;
+      }
+      
+      .search-input {
+        font-size: 1rem;
+      }
+      
+      .boss-item {
+        font-size: 1rem;
+      }
+
+      .boss-name {
+        font-size: 2rem;
+      }
+
+      .weapon-group {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Homepage -->
+  <div class="homepage" id="homepage">
+    <img src="logo2.png" alt="Boss Builder" class="title-image">
+    
+    <div class="search-container">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search for a boss..."
+        id="searchInput"
+      >
+      <div class="boss-list" id="bossList">
+        <div class="loading">Loading bosses...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boss Page -->
+  <div class="boss-page" id="bossPage">
+    <button class="back-button" id="backButton">← Back to Search</button>
+    
+    <div class="boss-header">
+      <div class="boss-image">Boss Image Placeholder</div>
+      <h1 class="boss-name" id="bossName">Maliketh</h1>
+      <div class="difficulty">Difficulty: <span id="difficultyRating">Hard</span></div>
+    </div>
+
+    <div class="build-section">
+      <!-- Input Column -->
+      <div class="input-column">
+        <h2>Build Input</h2>
+
+        <div class="input-group">
+          <label>Helmet</label>
+          <div class="dropdown-container">
+            <input type="text" class="dropdown-input" id="helmetInput" placeholder="Search helmet..." autocomplete="off">
+            <div class="dropdown-list" id="helmetList"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Chestplate</label>
+          <div class="dropdown-container">
+            <input type="text" class="dropdown-input" id="chestInput" placeholder="Search chestplate..." autocomplete="off">
+            <div class="dropdown-list" id="chestList"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Gauntlets</label>
+          <div class="dropdown-container">
+            <input type="text" class="dropdown-input" id="gauntletsInput" placeholder="Search gauntlets..." autocomplete="off">
+            <div class="dropdown-list" id="gauntletsList"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Leggings</label>
+          <div class="dropdown-container">
+            <input type="text" class="dropdown-input" id="leggingsInput" placeholder="Search leggings..." autocomplete="off">
+            <div class="dropdown-list" id="leggingsList"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Weapon & Upgrade Level</label>
+          <div class="weapon-group">
+            <div class="dropdown-container">
+              <input type="text" class="dropdown-input" id="weaponInput" placeholder="Search weapon..." autocomplete="off">
+              <div class="dropdown-list" id="weaponList"></div>
+            </div>
+            <input type="number" class="input-field" id="weaponLevel" placeholder="Level" min="0" max="25" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Player Level</label>
+          <input type="number" class="input-field" id="playerLevel" placeholder="Enter level" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+          <label>Vigor</label>
+          <input type="number" class="input-field" id="vigor" placeholder="Enter vigor" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+          <label>Endurance</label>
+          <input type="number" class="input-field" id="endurance" placeholder="Enter endurance" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+          <label>Scaling (Total Points)</label>
+          <input type="number" class="input-field" id="scaling" placeholder="Enter scaling points" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+          <label>Equip Load %</label>
+          <input type="number" class="input-field" id="equipLoad" placeholder="Enter percentage" min="0" max="100" autocomplete="off">
+        </div>
+
+        <button class="rating-button" id="ratingButton">Get Rating</button>
+      </div>
+
+      <!-- Output Column -->
+      <div class="output-column" id="outputColumn">
+        <div class="rating-text">Enter your build and click "Get Rating"</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCkxVu6norCugKSzFNBBOASdBD1mgg1M18",
+      authDomain: "bossbuilder-128d4.firebaseapp.com",
+      projectId: "bossbuilder-128d4",
+      storageBucket: "bossbuilder-128d4.firebasestorage.app",
+      messagingSenderId: "862306749471",
+      appId: "1:862306749471:web:4e9f985f60552c8919192a",
+      measurementId: "G-04FLG5N49D"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Global data
+    let allBosses = [];
+    let allArmor = [];
+    let allWeapons = [];
+    let currentBoss = null;
+    let selectedArmor = { helmet: null, chest: null, gauntlets: null, leggings: null };
+    let selectedWeapon = null;
+
+    // Elements
+    const homepage = document.getElementById('homepage');
+    const bossPage = document.getElementById('bossPage');
+    const searchInput = document.getElementById('searchInput');
+    const bossList = document.getElementById('bossList');
+    const backButton = document.getElementById('backButton');
+    const bossName = document.getElementById('bossName');
+    const ratingButton = document.getElementById('ratingButton');
+    const outputColumn = document.getElementById('outputColumn');
+    let isListVisible = false;
+
+    // Fetch all data
+    async function fetchAllData() {
+      try {
+        // Fetch bosses
+        const bossSnapshot = await getDocs(collection(db, "Bosses"));
+        allBosses = [];
+        bossSnapshot.forEach((doc) => {
+          allBosses.push({ id: doc.id, name: doc.id, ...doc.data() });
+        });
+        allBosses.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Fetch armor
+        const armorSnapshot = await getDocs(collection(db, "Armor"));
+        allArmor = [];
+        armorSnapshot.forEach((doc) => {
+          allArmor.push({ id: doc.id, ...doc.data() });
+        });
+        allArmor.sort((a, b) => a.id.localeCompare(b.id));
+
+        // Fetch weapons
+        const weaponSnapshot = await getDocs(collection(db, "Weapons"));
+        allWeapons = [];
+        weaponSnapshot.forEach((doc) => {
+          allWeapons.push({ id: doc.id, ...doc.data() });
+        });
+        allWeapons.sort((a, b) => a.id.localeCompare(b.id));
+
+        displayBosses(allBosses);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        bossList.innerHTML = '<div class="no-results">Error loading data. Please refresh.</div>';
+      }
+    }
+
+    // Display bosses
+    function displayBosses(bosses) {
+      if (bosses.length === 0) {
+        bossList.innerHTML = '<div class="no-results">No bosses found</div>';
+        return;
+      }
+
+      bossList.innerHTML = bosses.map(boss => 
+        `<div class="boss-item" data-id="${boss.id}">${boss.name}</div>`
+      ).join('');
+
+      document.querySelectorAll('.boss-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const bossId = item.dataset.id;
+          loadBossPage(bossId);
+        });
+      });
+    }
+
+    // Filter bosses
+    function filterBosses(searchTerm) {
+      const filtered = allBosses.filter(boss => 
+        boss.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      displayBosses(filtered);
+    }
+
+    // Load boss page
+    function loadBossPage(bossId) {
+      currentBoss = allBosses.find(b => b.id === bossId);
+      if (!currentBoss) return;
+
+      bossName.textContent = currentBoss.name;
+      document.getElementById('difficultyRating').textContent = currentBoss.Difficulty || 'Unknown';
+      document.querySelector('.boss-image').innerHTML = `<img src="boss-images/${currentBoss.id}.webp" alt="${currentBoss.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
+      homepage.classList.remove('active');
+      homepage.style.display = 'none';
+      bossPage.classList.add('active');
+      bossList.classList.remove('active');
+      isListVisible = false;
+      searchInput.value = '';
+
+      // Reset inputs
+      document.querySelectorAll('.input-field, .dropdown-input').forEach(input => input.value = '');
+      selectedArmor = { helmet: null, chest: null, gauntlets: null, leggings: null };
+      selectedWeapon = null;
+      outputColumn.innerHTML = '<div class="rating-text">Enter your build and click "Get Rating"</div>';
+    }
+
+    // Back button
+    backButton.addEventListener('click', () => {
+      bossPage.classList.remove('active');
+      homepage.style.display = 'flex';
+      homepage.classList.add('active');
+    });
+
+    // Search input handlers
+    searchInput.addEventListener('focus', () => {
+      if (allBosses.length > 0) {
+        bossList.classList.add('active');
+        isListVisible = true;
+        if (searchInput.value === '') {
+          displayBosses(allBosses);
+        }
+      }
+    });
+
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value;
+      if (searchTerm === '') {
+        displayBosses(allBosses);
+      } else {
+        filterBosses(searchTerm);
+      }
+      if (!isListVisible && allBosses.length > 0) {
+        bossList.classList.add('active');
+        isListVisible = true;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !bossList.contains(e.target)) {
+        bossList.classList.remove('active');
+        isListVisible = false;
+      }
+    });
+
+    // Setup dropdown
+    function setupDropdown(inputId, listId, items, type) {
+      const input = document.getElementById(inputId);
+      const list = document.getElementById(listId);
+
+      function displayItems(filteredItems) {
+        if (filteredItems.length === 0) {
+          list.innerHTML = '<div class="no-results">No items found</div>';
+          return;
+        }
+
+        list.innerHTML = filteredItems.map(item => 
+          `<div class="dropdown-item" data-id="${item.id}">${item.id}</div>`
+        ).join('');
+
+        document.querySelectorAll(`#${listId} .dropdown-item`).forEach(item => {
+          item.addEventListener('click', () => {
+            const itemId = item.dataset.id;
+            const selectedItem = items.find(i => i.id === itemId);
+            input.value = itemId;
+            list.classList.remove('active');
+
+            if (type === 'armor') {
+              const slot = inputId.replace('Input', '');
+              selectedArmor[slot] = selectedItem;
+            } else if (type === 'weapon') {
+              selectedWeapon = selectedItem;
+            }
+          });
+        });
+      }
+
+      input.addEventListener('focus', () => {
+        displayItems(items);
+        list.classList.add('active');
+      });
+
+      input.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filtered = items.filter(item => 
+          item.id.toLowerCase().includes(searchTerm)
+        );
+        displayItems(filtered);
+        list.classList.add('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !list.contains(e.target)) {
+          list.classList.remove('active');
+        }
+      });
+    }
+
+    // Rating calculation
+    ratingButton.addEventListener('click', () => {
+      if (!currentBoss) return;
+
+      const playerLevel = parseInt(document.getElementById('playerLevel').value) || 0;
+      const vigor = parseInt(document.getElementById('vigor').value) || 0;
+      const endurance = parseInt(document.getElementById('endurance').value) || 0;
+      const scaling = parseInt(document.getElementById('scaling').value) || 0;
+      const equipLoad = parseInt(document.getElementById('equipLoad').value) || 0;
+      const weaponLevel = parseInt(document.getElementById('weaponLevel').value) || 0;
+
+      let score = 0;
+      let maxScore = 0;
+      let feedback = [];
+
+      // Check armor (10 points total - less critical)
+      maxScore += 10;
+      const armorSlots = ['helmet', 'chest', 'gauntlets', 'leggings'];
+      let weakArmorCount = 0;
+      let totalArmorCount = 0;
+      
+      armorSlots.forEach(slot => {
+        const armor = selectedArmor[slot];
+        if (armor) {
+          totalArmorCount++;
+          const weaknesses = armor.Weak || [];
+          const bossAttacks = currentBoss.Damage || [];
+          const isWeak = weaknesses.some(w => bossAttacks.includes(w));
+          if (isWeak) weakArmorCount++;
+        }
+      });
+
+      if (totalArmorCount === 0) {
+        score += 0;
+        feedback.push('No armor equipped');
+      } else {
+        const weakRatio = weakArmorCount / totalArmorCount;
+        if (weakRatio === 0) {
+          score += 10; // All armor is good
+        } else if (weakRatio <= 0.5) {
+          score += 7; // Half or less is weak - slight penalty
+          feedback.push('Some armor pieces are weak to boss damage');
+        } else if (weakRatio <= 0.75) {
+          score += 3; // Most armor is weak - big penalty
+          feedback.push('Most armor is weak to boss damage');
+        } else {
+          score += 0; // All armor is weak - major penalty
+          feedback.push('CRITICAL: All armor is weak to boss damage');
+        }
+      }
+
+      // Check weapon damage types and elements (10 points) - 4TH FACTOR
+      maxScore += 10;
+      if (!selectedWeapon) {
+        feedback.push('No weapon selected');
+      } else {
+        let weaponScore = 0;
+        const bossWeaknesses = currentBoss.Weaknesses || [];
+        const bossStrengths = currentBoss.Strengths || [];
+        let matchesWeakness = false;
+        let matchesStrength = false;
+
+        // Check damage type (Slash, Strike, etc)
+        const weaponDamage = selectedWeapon.Damage || [];
+        weaponDamage.forEach(dmg => {
+          if (bossWeaknesses.includes(dmg)) {
+            weaponScore += 3;
+            matchesWeakness = true;
+          }
+          if (bossStrengths.includes(dmg)) {
+            weaponScore -= 3;
+            matchesStrength = true;
+          }
+        });
+
+        // Check statuses (Bleed, Frostbite, etc)
+        const weaponStatuses = selectedWeapon.Statuses || [];
+        weaponStatuses.forEach(status => {
+          if (bossWeaknesses.includes(status)) {
+            weaponScore += 3;
+            matchesWeakness = true;
+          }
+          if (bossStrengths.includes(status)) {
+            weaponScore -= 3;
+            matchesStrength = true;
+          }
+        });
+
+        // Check elements (Fire, Holy, Lightning, Magic)
+        ['Fire', 'Holy', 'Lightning', 'Magic'].forEach(element => {
+          if (selectedWeapon[element]) {
+            if (bossWeaknesses.includes(element)) {
+              weaponScore += 3;
+              matchesWeakness = true;
+            }
+            if (bossStrengths.includes(element)) {
+              weaponScore -= 3;
+              matchesStrength = true;
+            }
+          }
+        });
+
+        score += Math.max(0, Math.min(weaponScore, 10));
+        
+        if (matchesStrength) {
+          feedback.push('Weapon hits boss resistances');
+        } else if (matchesWeakness) {
+          feedback.push('Weapon exploits boss weaknesses');
+        }
+      }
+
+      // Check weapon upgrade level (20 points) - 2ND MAJOR FACTOR
+      maxScore += 20;
+      if (selectedWeapon) {
+        const expectedLevel = selectedWeapon.Stone === 'Somber' ? currentBoss.Somberlvl : currentBoss.Stonelvl;
+        const maxLevel = selectedWeapon.Stone === 'Somber' ? 10 : 25;
+        
+        // Check if player entered impossible upgrade level
+        if (weaponLevel > maxLevel) {
+          score += 0;
+          feedback.push(`CRITICAL: ${selectedWeapon.Stone === 'Somber' ? 'Somber' : 'Normal'} weapons max out at +${maxLevel}`);
+        } else if (weaponLevel >= expectedLevel) {
+          // At or above recommended = full points
+          score += 20;
+        } else {
+          // Below recommended = penalty based on how far below
+          const levelDiff = expectedLevel - weaponLevel;
+          if (levelDiff <= 2) {
+            score += 15;
+          } else if (levelDiff <= 5) {
+            score += 10;
+          } else if (levelDiff <= 8) {
+            score += 5;
+          } else {
+            score += 0;
+            feedback.push(`Weapon should be at least +${expectedLevel}`);
+          }
+        }
+      }
+
+      // Check stats (15 points each, 60 total) - 3RD MAJOR FACTOR
+      maxScore += 60;
+      const checkStat = (value, recommended, name) => {
+        if (value >= recommended) {
+          // At or above recommended = full points
+          return 15;
+        } else {
+          // Below recommended = penalty based on how far below
+          const diff = recommended - value;
+          if (diff <= 5) return 12;
+          if (diff <= 10) return 9;
+          if (diff <= 15) return 6;
+          if (diff <= 20) return 0;
+          feedback.push(`${name} should be at least ${recommended}`);
+          return 0;
+        }
+      };
+
+      score += checkStat(playerLevel, currentBoss.Level || 0, 'Level');
+      score += checkStat(vigor, currentBoss.Vigor || 0, 'Vigor');
+      score += checkStat(endurance, currentBoss.Endurance || 0, 'Endurance');
+      score += checkStat(scaling, currentBoss.Scaling || 0, 'Scaling');
+
+      // Check equip load (35 points) - MOST MAJOR FACTOR
+      maxScore += 35;
+      if (equipLoad >= 70) {
+        score += 0;
+        feedback.push('CRITICAL: Equip load must be under 70% for medium roll');
+      } else if (equipLoad >= 60 && equipLoad < 70) {
+        score += 35;
+      } else if (equipLoad >= 50 && equipLoad < 60) {
+        score += 20;
+        feedback.push('Equip load is too low - aim for 60-69.99%');
+      } else if (equipLoad >= 40 && equipLoad < 50) {
+        score += 5;
+        feedback.push('Equip load is dangerously low - aim for 60-69.99%');
+      } else if (equipLoad >= 30 && equipLoad < 40) {
+        score += 2;
+        feedback.push('CRITICAL: Equip load is way too low');
+      } else {
+        score += 0;
+        feedback.push('CRITICAL: Equip load is extremely low');
+      }
+
+      // Heavy weapon bonus (5 points)
+      maxScore += 5;
+      if (currentBoss.Poise === 80 && selectedWeapon && selectedWeapon.Heavy) {
+        score += 5;
+        feedback.push('Heavy weapon is effective against this boss');
+      } else {
+        score += 0;
+      }
+
+      // Calculate percentage
+      const percentage = Math.round((score / maxScore) * 100);
+      let grade = 'F';
+      if (percentage >= 90) grade = 'A';
+      else if (percentage >= 80) grade = 'B';
+      else if (percentage >= 70) grade = 'C';
+      else if (percentage >= 60) grade = 'D';
+
+      // Display result
+      outputColumn.innerHTML = `
+        <div class="rating-display">${grade}</div>
+        <div class="rating-text">${percentage}/100</div>
+        <div class="rating-explanation">
+          ${feedback.length > 0 ? feedback.join('. ') + '.' : 'Your build is well optimized for this boss!'}
+        </div>
+      `;
+    });
+
+    // Initialize
+    fetchAllData().then(() => {
+      setupDropdown('helmetInput', 'helmetList', allArmor, 'armor');
+      setupDropdown('chestInput', 'chestList', allArmor, 'armor');
+      setupDropdown('gauntletsInput', 'gauntletsList', allArmor, 'armor');
+      setupDropdown('leggingsInput', 'leggingsList', allArmor, 'armor');
+      setupDropdown('weaponInput', 'weaponList', allWeapons, 'weapon');
+    });
+  </script>
+</body>
+</html>
