@@ -729,13 +729,13 @@
         if (weakRatio === 0) {
           score += 10; // All armor is good
         } else if (weakRatio <= 0.5) {
-          score += 7; // Half or less is weak - slight penalty
+          score += 5; // Half or less is weak - slight penalty
           feedback.push('Some armor pieces are weak to boss damage');
         } else if (weakRatio <= 0.75) {
-          score += 3; // Most armor is weak - big penalty
+          score += 0; // Most armor is weak - big penalty
           feedback.push('Most armor is weak to boss damage');
         } else {
-          score += 0; // All armor is weak - major penalty
+          score -= 5; // All armor is weak - major penalty
           feedback.push('CRITICAL: All armor is weak to boss damage');
         }
       }
@@ -794,9 +794,9 @@
         score += Math.max(0, Math.min(weaponScore, 10));
         
         if (matchesStrength) {
-          feedback.push('Weapon hits boss resistances');
+          feedback.push('Boss is resistant towards weapon');
         } else if (matchesWeakness) {
-          feedback.push('Weapon exploits boss weaknesses');
+          
         }
       }
 
@@ -818,13 +818,16 @@
           const levelDiff = expectedLevel - weaponLevel;
           if (levelDiff <= 2) {
             score += 15;
-          } else if (levelDiff <= 5) {
-            score += 10;
-          } else if (levelDiff <= 8) {
-            score += 5;
-          } else {
-            score += 0;
             feedback.push(`Weapon should be at least +${expectedLevel}`);
+          } else if (levelDiff <= 5) {
+            score -= 30;
+            feedback.push(`Weapon is very underleveled and should be at least +${expectedLevel}`);
+          } else if (levelDiff <= 8) {
+            score -= 50;
+            feedback.push(`Weapon is absurdly underleveled and should be at least +${expectedLevel}`);
+          } else {
+            score -= 60;
+            feedback.push(`Weapon is garbage and should be at least +${expectedLevel}`);
           }
         }
       }
@@ -838,11 +841,13 @@
         } else {
           // Below recommended = penalty based on how far below
           const diff = recommended - value;
-          if (diff <= 5) return 12;
-          if (diff <= 10) return 9;
-          if (diff <= 15) return 6;
-          if (diff <= 20) return 0;
           feedback.push(`${name} should be at least ${recommended}`);
+          if (diff <= 5) return 10;
+          if (diff <= 10) return 5;
+          if (diff <= 15) return -10;
+          if (diff <= 20) return -15;
+          if (diff <= 30) return -25;
+          if (diff > 30) return -30;
           return 0;
         }
       };
@@ -863,26 +868,29 @@
         score += 20;
         feedback.push('Equip load is too low - aim for 60-69.99%');
       } else if (equipLoad >= 40 && equipLoad < 50) {
-        score += 5;
+        score += 10;
         feedback.push('Equip load is dangerously low - aim for 60-69.99%');
       } else if (equipLoad >= 30 && equipLoad < 40) {
-        score += 2;
-        feedback.push('CRITICAL: Equip load is way too low');
-      } else {
         score += 0;
-        feedback.push('CRITICAL: Equip load is extremely low');
+        feedback.push('CRITICAL: Equip load is way too low - aim for 60-69.99%');
+      } else {
+        score -= 10;
+        feedback.push('CRITICAL: Equip load is extremely low - aim for 60-69.99%');
       }
 
       // Heavy weapon bonus (5 points)
       maxScore += 5;
       if (currentBoss.Poise === 80 && selectedWeapon && selectedWeapon.Heavy) {
         score += 5;
-        feedback.push('Heavy weapon is effective against this boss');
-      } else {
+      } else if (currentBoss.Poise == 80 && selectedWeapon && selectedWeapon.Heavy == false) {
         score += 0;
+        feedback.push('Heavy weapons are effective against this boss');
+      } else {
+        score += 5;
       }
 
       // Calculate percentage
+      if (score < 0) score = 0;
       const percentage = Math.round((score / maxScore) * 100);
       let grade = 'F';
       if (percentage >= 90) grade = 'A';
